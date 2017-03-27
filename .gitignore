@@ -1,0 +1,31 @@
+# Transpiled files and dependencies
+/node_modules
+/public/js
+/public/css
+/server
+/client
+/shared
+/common
+
+_misc
+
+*.asd
+
+# ignore all config except default
+/src/server/config/*
+!/src/server/config/default.js
+
+# Application instance specific
+/logs
+/db
+
+# ignore junk files
+npm-debug.log
+.DS_Store
+Thumbs.db
+
+# ignore cordova extra files
+/app-player/platforms/*
+/app-player/www/*
+/app-player/plugins/*
+/app-player/hooks/*

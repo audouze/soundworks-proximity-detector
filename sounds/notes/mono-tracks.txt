@@ -1,0 +1,8 @@
+Pistes mono : 
+
+- bell
+- drums-bd-hh1-break
+- drums-bd-hh1
+- drums-sd
+- marimba-elec-break
+- marimba-elec
