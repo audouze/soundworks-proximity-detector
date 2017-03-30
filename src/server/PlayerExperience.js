@@ -7,6 +7,8 @@ export default class PlayerExperience extends Experience {
 
     this.checkin = this.require('checkin');
     this.sharedConfig = this.require('shared-config');
+
+    this._toMonitor = this._toMonitor.bind(this);
   }
 
   // if anything needs to append when the experience starts
@@ -16,8 +18,14 @@ export default class PlayerExperience extends Experience {
   // starts the experience on the client side), write it in the `enter` method
   enter(client) {
     super.enter(client);
-    // send a message to all the other clients of the same type
-    this.broadcast(client.type, client, 'play');
+
+    this.receive(client, 'player:beacon', this._toMonitor(client));
+  }
+
+  _toMonitor (client) {
+    return (time, rssi, dist) => {
+      this.broadcast('monitor', client, 'player:beacon', time, rssi, dist);
+    }
   }
 
   exit(client) {

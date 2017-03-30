@@ -310,6 +310,11 @@ class Beacon extends Service {
 
   /** @private */
   _didRangeBeaconsInRegion(pluginResult) {
+    const beacons = pluginResult.beacons;
+    for (let i = 0; i < beacons.length; i++) {
+      if (beacons[i].rssi === 0)
+        beacons[i].rssi = +Infinity;
+    }
     // call user defined callbacks
     this._callbacks.forEach(function(callback) {
       callback(pluginResult);

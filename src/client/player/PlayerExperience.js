@@ -28,10 +28,10 @@ export default class PlayerExperience extends soundworks.Experience {
     const beaconConfig = { uuid: beaconUUID };
 
     if (!window.cordova)
-      beaconConfig.emulate = { numPeers: 2 };
+      beaconConfig.emulate = { numPeers: 1 };
 
-    this.beacon = this.require('beacon', beaconConfig);   
-    
+    this.beacon = this.require('beacon', beaconConfig);
+
     this.geigerMap = new Map();
     this.isTouching = false;
 
@@ -86,7 +86,11 @@ export default class PlayerExperience extends soundworks.Experience {
       let log = 'Closeby Beacons: </br></br>';
 
       pluginResult.beacons.forEach((beacon) => {
-        const dist = this.beacon.rssiToDist(beacon.rssi)
+        const time = new Date().getTime() / 1000;
+        const rssi = beacon.rssi;
+        const dist = this.beacon.rssiToDist(rssi);
+        this.send('player:beacon', time, rssi, dist);
+
         this.processBeacon(beacon, dist);
 
         log += beacon.major + '.' + beacon.minor + '<br />' +
@@ -139,7 +143,7 @@ class GeigerCounter {
     this.oscillator.type = 'sine';
     this.oscillator.frequency.value = 10; // value in hertz
     this.oscillator.start();
-    this.oscillator.connect(audioContext.destination);
+    // this.oscillator.connect(audioContext.destination);
   }
 
   setDist (dist) {
