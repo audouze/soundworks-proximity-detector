@@ -1,5 +1,6 @@
 import * as soundworks from 'soundworks/client';
 import * as lfo from 'waves-lfo/client';
+import * as d3 from 'd3';
 
 const audioContext = soundworks.audioContext;
 const client = soundworks.client;
