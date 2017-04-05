@@ -1,6 +1,6 @@
 import * as soundworks from 'soundworks/client';
 import * as lfo from 'waves-lfo/client';
-import * as d3 from 'd3';
+
 
 const audioContext = soundworks.audioContext;
 const client = soundworks.client;
@@ -15,8 +15,8 @@ class MonitorExperience extends soundworks.Experience {
   constructor() {
     super();
 
-    this.graphRssi = null;
-    this.graphDist = null;
+    this.graphDist0 = null;
+    this.graphDist1 = null;
     this.traceEvent = this.traceEvent.bind(this);
   }
 
@@ -36,60 +36,65 @@ class MonitorExperience extends soundworks.Experience {
 
     this.show();
 
-    this.receive('player:beacon', this.traceEvent);
+    this.receive('player:beacons', this.traceEvent);
     this.generateGraph();
   }
 
-  // _display (dist, rssi) {
-  //   console.log(dist, rssi);
-  // }
-
   generateGraph() {
-    const eventInRssi = new lfo.source.EventIn({
+    console.log('hello');
+    const eventInDist0 = new lfo.source.EventIn({
       frameSize: 1,
       frameRate: 0.1,
       frameType: 'vector'
     });
 
-    const eventInDist = new lfo.source.EventIn({
+    const eventInDist1 = new lfo.source.EventIn({
       frameSize: 1,
       frameRate: 0.1,
       frameType: 'vector'
     });
+
 
     const $container = this.view.$el.querySelector('#canvas-container');
 
-    const bpfRssi = new lfo.sink.BpfDisplay({
-      container: $container,
-      duration: 30,
-      min: -100,
-      max: 0,
-      width: 600,
-      height: 600,
-      colors: ['red'],
-    });
 
-    const bpfDist = new lfo.sink.BpfDisplay({
+    const bpfDist0 = new lfo.sink.BpfDisplay({
       container: $container,
       duration: 30,
       min: 0,
-      max: 10,
+      max: 5,
       width: 600,
       height: 600,
     });
 
-    eventInRssi.connect(bpfRssi);
-    eventInDist.connect(bpfDist);
-    eventInRssi.start();
-    eventInDist.start();
+       const bpfDist1 = new lfo.sink.BpfDisplay({
+      container: $container,
+      duration: 30,
+      min: 0,
+      max: 5,
+      width: 600,
+      height: 600,
+      colors: ['green'],
+    });
 
-    this.graphRssi = { eventInRssi, bpfRssi };
-    this.graphDist = { eventInDist, bpfDist };
+
+    eventInDist0.connect(bpfDist0);
+    eventInDist0.start();
+    eventInDist1.connect(bpfDist1);
+    eventInDist1.start();
+
+
+    this.graphDist0 = { eventInDist0, bpfDist0 };
+    this.graphDist1 = { eventInDist1, bpfDist1 };
   }
 
-  traceEvent(time, rssi, dist) {
-    this.graphRssi.eventInRssi.process(time, rssi);
-    this.graphDist.eventInDist.process(time, dist);
+  traceEvent(time, clientIndex, peerIndex, peerDist) {
+    if (clientIndex == 0) {
+      this.graphDist0.eventInDist0.process(peerDist);
+    }
+    else {
+      this.graphDist1.eventInDist1.process(peerDist);
+    }
   }
 }
 

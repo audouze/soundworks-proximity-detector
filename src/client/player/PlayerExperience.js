@@ -18,7 +18,7 @@ const viewTemplate = `
 
 // this experience plays a sound when it starts, and plays another sound when
 // other clients join the experience
-export default class PlayerExperience extends soundworks.Experience {
+class PlayerExperience extends soundworks.Experience {
   constructor(standalone, assetsDomain, beaconUUID) {
     super();
 
@@ -32,7 +32,6 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.beacon = this.require('beacon', beaconConfig);
 
-    this.geigerMap = new Map();
     this.isTouching = false;
 
     this.beaconCallback = this.beaconCallback.bind(this);
@@ -66,6 +65,8 @@ export default class PlayerExperience extends soundworks.Experience {
     }
 
     this.show();
+
+    this.$log = document.getElementById('logValues');
   }
 
   initBeacon() {
@@ -85,74 +86,31 @@ export default class PlayerExperience extends soundworks.Experience {
       // diplay beacon list on screen
       let log = 'Closeby Beacons: </br></br>';
 
+      const beaconResults = pluginResult.beacons.map((beacon) => {
+        const peerIndex = beacon.minor;
+        console.log(client.index, peerIndex);
+        const dist = this.beacon.rssiToDist(beacon.rssi);
+        return [peerIndex, dist];
+      });
+
+      console.log(beaconResults);
+      this.send('player:beacons', beaconResults);
+
       pluginResult.beacons.forEach((beacon) => {
-        const time = new Date().getTime() / 1000;
         const rssi = beacon.rssi;
         const dist = this.beacon.rssiToDist(rssi);
-        this.send('player:beacon', time, rssi, dist);
-
-        this.processBeacon(beacon, dist);
 
         log += beacon.major + '.' + beacon.minor + '<br />' +
-               'rssi: ' + beacon.rssi + '<br />'  +
+               'rssi: ' + rssi + '<br />'  +
                'dist: ' + dist + 'm' + '<br />'  +
                '(' + beacon.proximity + ')' + '<br /><br />';
-               // 'dist: ' + Math.round(dist * 100) / 100 + 'm' + '</br>'  +
       });
-      document.getElementById('logValues').innerHTML = log;
+
+      this.$log.innerHTML = log;
     } else {
-      // discard if map empty
-      if (this.geigerMap.size == 0) { return; }
-      // kill map content
-      this.geigerMap.forEach( ( geigerCounter, id ) => {
-        geigerCounter.oscillator.stop();
-      });
-      // clean map
-      this.geigerMap = new Map();
-      // clean screen log
-      document.getElementById('logValues').innerHTML = '';
+      this.$log.innerHTML = '';
     }
   }
-
-
-  processBeacon(beacon, dist) {
-    const id = beacon.minor;
-    let geigerCounter = null;
-    // if beacon ID unregistered
-    if( !this.geigerMap.has(id) ) {
-      // create instance of geiger counter
-      geigerCounter = new GeigerCounter();
-      // add geigeir in local map
-      this.geigerMap.set(id, geigerCounter);
-    } else {
-      // fetch geigerCounter instance associated to beacon ID
-      geigerCounter = this.geigerMap.get(id);
-    }
-
-    // set geiger counter dist
-    geigerCounter.setDist(dist);
-
-  }
-
 }
 
-
-class GeigerCounter {
-  constructor () {
-    this.oscillator = audioContext.createOscillator();
-    this.oscillator.type = 'sine';
-    this.oscillator.frequency.value = 10; // value in hertz
-    this.oscillator.start();
-    // this.oscillator.connect(audioContext.destination);
-  }
-
-  setDist (dist) {
-    // mapping of distance to frequency
-    let freq = dist*(-74) + 991;
-    // change oscillator frequency
-    this.oscillator.frequency.value = freq;
-  }
-
-
-}
-
+export default PlayerExperience;

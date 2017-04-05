@@ -126,7 +126,9 @@ class Beacon extends Service {
 
     if (this.options.skipService) {
       this.ready();
+      this.startAdvertising = () => {};
       this.restartAdvertising = () => {};
+      this.startRanging = () => {};
       this.restartRanging = () => {};
       return;
     }
@@ -144,10 +146,11 @@ class Beacon extends Service {
       });
     } else {
       this.ready();
+      this.startAdvertising = () => {};
       this.restartAdvertising = () => {};
       this._rangingIntervalId = null;
 
-      this.restartRanging = () => {
+      this.startRanging = () => {
         clearInterval(this._rangingIntervalId);
 
         this._emulatedBeacons.length = 0;
@@ -155,9 +158,12 @@ class Beacon extends Service {
         let minor = 0;
 
         for (let i = 0; i < numPeers; i++) {
+          if (minor === this.options.minor)
+            minor += 1;
+
           const peerResult = {
             major: this.options.major,
-            minor: minor === this.options.minor ? minor += 1 : minor,
+            minor: minor,
             rssi: -1 * (80 * Math.random() + 20),   // [-20, -100]
             proximity: 'hi',
           }
@@ -177,7 +183,7 @@ class Beacon extends Service {
         }, 1000);
       };
 
-      this.restartRanging();
+      this.restartRanging = this.startRanging;
     }
   }
 
