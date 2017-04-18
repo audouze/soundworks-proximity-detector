@@ -23,7 +23,7 @@ class Beacon extends Service {
       uuid: '74278BDA-B644-4520-8F0C-720EAF059935',
       major: Math.floor(Math.random() * 65500),
       minor: Math.floor(Math.random() * 65500),
-      txPower: -55,
+      txPower: -57.5,
       debug: false,
       skipService: false,
       emulate: null,
@@ -372,12 +372,11 @@ class Beacon extends Service {
     if (rssi === 0)
       return 0.0;
 
-    let ratio = rssi * 1.0 / txPower;
-
-    if (ratio < 1.0)
-      return Math.pow(ratio, 10);
-    else
-      return (0.89976 * Math.pow(ratio, 7.7095) + 0.111);
+    // const txPower = -57.5;
+    // if (ratio < 1.0)
+    //   return Math.pow(ratio, 10);
+    // else
+    return 1.0998 * (Math.pow(rssi / txPower, 7.4095) + 0.0110);
   }
 }
 
